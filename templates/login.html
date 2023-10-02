@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login - NFT Marketplace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <a href="/" class="brand-logo">NFT Marketplace</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/profile">Profile</a></li>
+                {% if 'logged_in' in session %}
+                <li><a href="/logout">Log Out</a></li>
+                {% else %}
+                <li><a href="/login">Log In</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Login with Metamask</h2>
+        {% if error %}
+        <div class="card-panel red lighten-2">{{ error }}</div>
+        {% endif %}
+        <button class="btn waves-effect waves-light" onclick="connectMetamask()">Connect Metamask</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+
+    <script>
+        async function connectMetamask() {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.enable();
+                    const web3 = new Web3(window.ethereum);
+                    const accounts = await web3.eth.getAccounts();
+                    console.log(accounts);
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ address: accounts[0] })
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        window.location.href = '/';
+                    } else {
+                        console.log(result.message);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                alert('Metamask not detected');
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

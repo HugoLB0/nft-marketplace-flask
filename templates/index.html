@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NFT Marketplace - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <a href="/" class="brand-logo">NFT Marketplace</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/profile">Profile</a></li>
+                {% if 'logged_in' in session %}
+                <li><a href="/logout">Log Out</a></li>
+                {% else %}
+                <li><a href="/login">Log In</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row">
+            {% for nft in nfts %}
+            <div class="col s12 m4">
+                <div class="card">
+                    <div class="card-image">
+                        <img src="{{ nft['img'] }}">
+                        <span class="card-title">{{ nft['name'] }}#{{ nft['id'] }}</span>
+                    </div>
+                    <div class="card-content">
+                        <p>{{ nft['description'] }}</p>
+                        <p>Price: {{ nft['price'] }}</p>
+                    </div>
+                    <div class="card-action">
+                        <a href="/item_details/{{ nft['id'] }}">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NFT Marketplace - Item Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <a href="/" class="brand-logo">NFT Marketplace</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="/profile">Profile</a></li>
+                {% if 'logged_in' in session %}
+                <li><a href="/logout">Log Out</a></li>
+                {% else %}
+                <li><a href="/login">Log In</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col s12 m6">
+                <div class="card">
+                    <div class="card-image">
+                        <img src="{{ nft['img'] }}">
+                        <span class="card-title">{{ nft['name'] }}#{{ nft['id'] }}</span>
+                    </div>
+                    <div class="card-content">
+                        <p>{{ nft['description'] }}</p>
+                        <p>Price: {{ nft['price'] }}</p>
+                        <p>Owner: {{ nft['owner'] }}</p>
+                    </div>
+                    <div class="card-action">
+						<a class="waves-effect waves-light btn" onclick="BuyItem({{ nft['id'] }})" >Buy Now</a>
+					</div>
+                </div>
+            </div>
+            <div class="col s12 m6">
+                <h2>Transaction History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>TX hash</th>
+                            <th>Buyer</th>
+                            <th>Price</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transaction_history %}
+                        <tr>
+                            <td>{{ transaction['id'] }}</td>
+                            <td>{{ transaction['tx_hash'] }}</td>
+                            <td>{{ transaction['buyer'] }}</td>
+                            <td>{{ transaction['price'] }}</td>
+                            <td>{{ transaction['date'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script>
+        async function connectMetamask() {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.enable();
+                    const web3 = new Web3(window.ethereum);
+                    const accounts = await ethereum.request({
+                        method: 'eth_requestAccounts',
+                    });
+                    console.log(accounts);
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ address: accounts[0] })
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        window.location.href = '/';
+                    } else {
+                        console.log(result.message);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                alert('Metamask not detected');
+            }
+        };
+        async function BuyItem(itemID) {
+            // check if wallet is connected
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.enable();
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                alert('Metamask not detected');
+            }
+            const web3 = new Web3(window.ethereum);
+
+
+            const accounts = await ethereum.request({
+                method: 'eth_requestAccounts',
+            });
+
+
+
+            // fetch transaction from @app.route('/buy/<int:item_id>')
+            const response = await fetch(`/buy/${itemID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ address: accounts[0] })
+            });
+
+
+            const result = await response.json();
+            // response sample: {'from': '0x3661Ed209e648485E939B044D55f7bEAa0eD6D54', 'to': '0x3661Ed209e648485E939B044D55f7bEAa0eD6D54', 'value': 50000000000000000, 'gas': 2000000, 'gasPrice': 50000000000}
+            console.log(result.transaction)
+            // try to send the transaction to metamask
+
+            try {
+                const transactionParameters = {
+                    from: accounts[0],
+                    to: result.transaction.to,
+                    value: result.transaction.value.toString(),
+                    gas: result.transaction.gas.toString(),
+                    
+ 
+                };
+
+                console.log(transactionParameters);
+
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [transactionParameters]
+                });
+                // send the transaction hash to the Flask backend
+                const response = await fetch(`/buy/${itemID}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ txHash: txHash, soldPrice: result.transaction.value.toString() })
+                });
+
+
+            } catch (error) {
+                alert(error.message);
+            }
+
+        }
+
+
+    </script>
+</body>
+
+</html>
