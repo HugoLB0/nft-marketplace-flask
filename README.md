@@ -2,6 +2,12 @@
 
 Welcome to the NFT Marketplace README! This NFT marketplace is a decentralized application (DApp) built using Flask, Web3, and smart contracts on the Ethereum blockchain. Below, we describe the functionalities of this NFT marketplace.
 
+
+https://github.com/HugoLB0/nft-marketplace-flask/assets/66400773/34e5924d-ca86-4c60-b58c-f82b99b71c2c
+
+
+
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Functionalities](#functionalities)
